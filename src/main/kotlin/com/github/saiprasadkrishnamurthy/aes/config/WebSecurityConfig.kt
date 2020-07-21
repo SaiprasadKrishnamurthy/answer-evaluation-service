@@ -16,8 +16,8 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource
  * @author Sai.
  */
 @EnableWebSecurity
-class WebSecurityConfiguration(@Value("\${api.auth.username}") private val user: String,
-                               @Value("\${api.auth.password}") private val password: String) : WebSecurityConfigurerAdapter() {
+class WebSecurityConfig(@Value("\${api.auth.username}") private val user: String,
+                        @Value("\${api.auth.password}") private val password: String) : WebSecurityConfigurerAdapter() {
 
     override fun configure(http: HttpSecurity) {
         http.csrf().disable()

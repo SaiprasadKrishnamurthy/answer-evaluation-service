@@ -17,8 +17,8 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2
 @EnableMongoRepositories
 @EnableSwagger2
 @EnableScheduling
-class EventRelationshipsAnalysisServiceApplication
+class AnswerEvaluationServiceApplication
 
 fun main(args: Array<String>) {
-    runApplication<EventRelationshipsAnalysisServiceApplication>(*args)
+    runApplication<AnswerEvaluationServiceApplication>(*args)
 }
