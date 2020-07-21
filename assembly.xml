@@ -1,0 +1,28 @@
+<assembly>
+    <id>deployment</id>
+    <formats>
+        <format>zip</format>
+    </formats>
+
+    <includeBaseDirectory>false</includeBaseDirectory>
+
+    <fileSets>
+        <fileSet>
+            <directory>deployment</directory>
+            <outputDirectory>.</outputDirectory>
+            <includes>
+                <include>**/*.*</include>
+            </includes>
+			 <excludes>
+				<exclude>*template*.yml</exclude>
+			</excludes>
+        </fileSet>
+        <fileSet>
+            <directory>target/k8s</directory>
+            <outputDirectory>.</outputDirectory>
+            <includes>
+                <include>**/*.*</include>
+            </includes>
+        </fileSet>
+    </fileSets>
+</assembly>
