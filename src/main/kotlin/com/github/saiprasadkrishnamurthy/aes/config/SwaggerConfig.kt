@@ -25,7 +25,7 @@ class SwaggerConfig(private val environment: Environment) {
     fun configApi(): Docket {
         return Docket(DocumentationType.SWAGGER_2)
                 .groupName("aes")
-                .host("https://github.com/SaiprasadKrishnamurthy")
+                //.host("https://github.com/SaiprasadKrishnamurthy")
                 .apiInfo(apiInfo())
                 .select()
                 .apis(RequestHandlerSelectors.any())
