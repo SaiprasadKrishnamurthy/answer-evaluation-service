@@ -41,6 +41,12 @@ class ElasticConfig {
             field = this.esUrl
         }
 
+    @Value("\${esKeywordsIndex}")
+    var esKeywordsIndex: String? = null
+        set(esKeywordsIndex) {
+            field = this.esKeywordsIndex
+        }
+
     @Value("\${esUsername}")
     var esUsername: String? = null
         set(esUsername) {

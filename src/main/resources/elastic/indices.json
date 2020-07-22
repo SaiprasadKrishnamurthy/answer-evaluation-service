@@ -1,0 +1,15 @@
+{
+  "query": {
+    "bool": {
+      "should": [
+        %s
+      ],
+      "filter": [
+        { "term":  { "quesionId": "%s" }},
+        { "term":  { "clientId": "%s" }},
+        { "term":  { "subjectId": "%s" }},
+        { "term":  { "classId": "%s" }}
+      ]
+    }
+  }
+}
