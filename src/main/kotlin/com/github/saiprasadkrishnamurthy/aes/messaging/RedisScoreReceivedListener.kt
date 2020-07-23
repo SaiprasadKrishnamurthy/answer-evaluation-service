@@ -15,7 +15,7 @@ class RedisScoreReceivedListener(val scoreRepository: ScoreRepository) : ScoreLi
     @RqueueListener(value = ["\${scoreQueue}"])
     override fun scoreReceived(json: String) {
         val score = jacksonObjectMapper().readValue(json, Score::class.java)
-        scoreRepository.deleteByQuestionIdAndType(score.questionId, score.type)
+        scoreRepository.deleteByQuestionAnswerMetadataIdAndType(score.questionAnswerMetadataId, score.type)
         scoreRepository.save(score)
     }
 }

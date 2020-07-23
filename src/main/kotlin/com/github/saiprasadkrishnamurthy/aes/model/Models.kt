@@ -19,21 +19,39 @@ data class QuestionAnswerMetadata(@Id val id: String = UUID.randomUUID().toStrin
                                   val maxMarks: Int,
                                   var createdDateTime: Long,
                                   var modifiedDateTime: Long,
-                                  val keywords: List<Text>,
-                                  val maxKeywordMarks: Int,
-                                  val phrases: List<Text>,
-                                  val topics: List<Text>,
-                                  val exactTexts: List<Text>,
-                                  val maxPhrasesMarks: Int,
-                                  val penaltyRules: List<PenaltyRule>,
+                                  val keywords: List<Text> = listOf(),
+                                  val phrases: List<Text> = listOf(),
+                                  val topics: List<Text> = listOf(),
+                                  val exactTexts: List<Text> = listOf(),
+                                  val weightages: Map<String, Double> = mapOf(),
                                   val actualAnswer: String = "")
 
 data class Text(val keyword: String, val marks: Int, val synonyms: List<String>)
-data class PenaltyRule(val penalty: String, val marks: Int, val maxPenaltyMarks: Int)
 data class KeywordMatchRequest(val questionAnswerMetadataIdentifier: QuestionAnswerMetadataIdentifier, val answer: String)
 data class KeywordMatchResponse(val questionAnswerMetadataIdentifier: QuestionAnswerMetadataIdentifier, val score: Double = 0.0, val texts: List<String>)
 
-data class Score(@Id val id: String, val questionId: String, val type: String, val score: Double = 0.0)
+enum class AnswerType {
+    expected, actual
+}
+
+@Document
+data class Score(@Id val id: String,
+                 val questionAnswerMetadataId: String,
+                 val type: String,
+                 val score: Double = 0.0,
+                 val answerType: AnswerType,
+                 val explanation: List<String> = listOf()) {
+    companion object {
+        fun zero(qmId: String, answerType: AnswerType, type: String) =
+                Score(id = UUID.randomUUID().toString(),
+                        questionAnswerMetadataId = qmId,
+                        answerType = answerType,
+                        score = 0.0,
+                        explanation = listOf(),
+                        type = type)
+    }
+
+}
 
 interface QuestionAnswerMetadataChangedListener {
     fun questionAnswerMetadataChanged(json: String)

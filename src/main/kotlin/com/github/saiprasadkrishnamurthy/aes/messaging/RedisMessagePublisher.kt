@@ -23,7 +23,7 @@ class RedisMessagePublisher(private val redisTemplate: RedisTemplate<String, Str
     private fun send(queue: String, json: String) {
         val rqueueMessageTemplate = RqueueMessageTemplate(redisTemplate.connectionFactory)
         val rqueueMessageSender = RqueueMessageSender(rqueueMessageTemplate)
-        rqueueMessageSender.put(scoreQueue, json)
+        rqueueMessageSender.put(queue, json)
     }
 
     override fun broadcastQuestionAnswerChanges(questionAnswerMetadata: QuestionAnswerMetadata) {

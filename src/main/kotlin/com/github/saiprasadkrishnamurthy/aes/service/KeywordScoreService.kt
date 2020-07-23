@@ -1,16 +1,23 @@
 package com.github.saiprasadkrishnamurthy.aes.service
 
-import com.github.saiprasadkrishnamurthy.aes.model.MessagePublisher
-import com.github.saiprasadkrishnamurthy.aes.model.QuestionAnswerMetadata
-import com.github.saiprasadkrishnamurthy.aes.model.Score
+import com.github.saiprasadkrishnamurthy.aes.model.*
 import org.springframework.stereotype.Service
+import java.util.*
 
 /**
  * @author Sai.
  */
 @Service
-class KeywordScoreService(messagePublisher: MessagePublisher) : BaseScoreService(messagePublisher) {
+class KeywordScoreService(messagePublisher: MessagePublisher, val elasticKeywordsService: ElasticKeywordsService) : BaseScoreService(messagePublisher) {
     override fun getScore(questionAnswerMetadata: QuestionAnswerMetadata): Score {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return if (questionAnswerMetadata.actualAnswer.isNotBlank()) {
+            val keywordMatchRequest = KeywordMatchRequest(questionAnswerMetadataIdentifier = questionAnswerMetadata.identifier,
+                    answer = questionAnswerMetadata.actualAnswer)
+            val matchResponse = elasticKeywordsService.matchKeywords(keywordMatchRequest)
+            Score(id = UUID.randomUUID().toString(), questionAnswerMetadataId = questionAnswerMetadata.id, answerType = AnswerType.actual, score = matchResponse.score, explanation = matchResponse.texts, type = "keywords")
+        } else {
+            elasticKeywordsService.registerKeywords(questionAnswerMetadata)
+            Score(id = UUID.randomUUID().toString(), questionAnswerMetadataId = questionAnswerMetadata.id, answerType = AnswerType.expected, score = questionAnswerMetadata.keywords.size.toDouble(), explanation = questionAnswerMetadata.keywords.map { it.keyword }, type = "keywords")
+        }
     }
 }

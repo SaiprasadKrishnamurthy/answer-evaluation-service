@@ -1,0 +1,44 @@
+{
+  "author": "PJ",
+
+  "identifier": {
+    "classId": "XII",
+    "clientId": "SITA",
+    "questionId": "1",
+    "subjectId": "SC"
+  },
+  "keywords": [
+    {
+      "keyword": "October 2",
+      "marks": 3,
+      "synonyms": []
+    },
+    {
+      "keyword": "Porbandar",
+      "marks": 3  ,
+      "synonyms": []
+    },
+    {
+      "keyword": "lawyer",
+      "marks": 2   ,
+      "synonyms": []
+    },
+    {
+      "keyword": "social activist",
+      "marks": 3  ,
+      "synonyms": []
+    }
+  ],
+  "maxMarks": 10,
+  "phrases": [
+    {
+      "keyword": " wife Kasturba Gandhi",
+      "marks": 2,
+      "synonyms": []
+
+    }
+  ],
+  "rawAnswer": "Mahatma Gandhi, by name of Mohandas Karamchand Gandhi, (born October 2, 1869, Porbandar, India—died January 30, 1948, Delhi), Indian lawyer, politician, social activist, and writer who became the leader of the nationalist movement against the British rule of India.",
+  "rawQuestion": "Who is Mahatma Gandhi",
+  "totalMarks": 10
+}
