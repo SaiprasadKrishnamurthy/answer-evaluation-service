@@ -49,6 +49,22 @@ data class Score(@Id val id: String,
                         score = 0.0,
                         explanation = listOf(),
                         type = type)
+
+        fun one(qmId: String, answerType: AnswerType, type: String) =
+                Score(id = UUID.randomUUID().toString(),
+                        questionAnswerMetadataId = qmId,
+                        answerType = answerType,
+                        score = 1.0,
+                        explanation = listOf(),
+                        type = type)
+
+        fun n(qmId: String, answerType: AnswerType, type: String, n: Double) =
+                Score(id = UUID.randomUUID().toString(),
+                        questionAnswerMetadataId = qmId,
+                        answerType = answerType,
+                        score = n,
+                        explanation = listOf(),
+                        type = type)
     }
 
 }

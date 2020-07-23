@@ -14,9 +14,10 @@ class ExactWordsScoreService(messagePublisher: MessagePublisher) : BaseScoreServ
     override fun getScore(questionAnswerMetadata: QuestionAnswerMetadata): Score {
         println(" Implement Me Kumar!")
         return if (questionAnswerMetadata.actualAnswer.isNotBlank()) {
-            Score.zero(qmId = questionAnswerMetadata.id, answerType = AnswerType.expected, type = "exactWords")
-        } else {
+            // your logic call Score.n(...) with the actual score.
             Score.zero(qmId = questionAnswerMetadata.id, answerType = AnswerType.actual, type = "exactWords")
+        } else {
+            Score.one(qmId = questionAnswerMetadata.id, answerType = AnswerType.expected, type = "exactWords")
         }
     }
 }
