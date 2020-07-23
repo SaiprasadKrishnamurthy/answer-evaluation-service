@@ -24,11 +24,20 @@ data class QuestionAnswerMetadata(@Id val id: String = UUID.randomUUID().toStrin
                                   val topics: List<Text> = listOf(),
                                   val exactTexts: List<Text> = listOf(),
                                   val weightages: Map<String, Double> = mapOf(),
-                                  val actualAnswer: String = "")
+                                  val actualAnswer: String = "",
+                                  val studentId: String = "")
 
-data class Text(val keyword: String, val marks: Int, val synonyms: List<String>)
+data class Text(val keyword: String, val marks: Int = 1, val synonyms: List<String>)
 data class KeywordMatchRequest(val questionAnswerMetadataIdentifier: QuestionAnswerMetadataIdentifier, val answer: String)
 data class KeywordMatchResponse(val questionAnswerMetadataIdentifier: QuestionAnswerMetadataIdentifier, val score: Double = 0.0, val texts: List<String>)
+
+data class Answer(val studentId: String, val questionAnswerMetadataId: String, val answer: String)
+
+@Document
+data class TotalScore(@Id val id: String = UUID.randomUUID().toString(),
+                      val questionAnswerMetadata: QuestionAnswerMetadata,
+                      val rawScores: List<Score>,
+                      val total: Double)
 
 enum class AnswerType {
     expected, actual

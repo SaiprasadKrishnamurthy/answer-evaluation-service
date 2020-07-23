@@ -149,6 +149,18 @@
             <artifactId>redisson</artifactId>
             <version>3.12.4</version>
         </dependency>
+        <dependency>
+            <groupId>com.textrazor</groupId>
+            <artifactId>textrazor</artifactId>
+            <version>1.0.9</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.apache.commons/commons-math3 -->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-math3</artifactId>
+            <version>3.6.1</version>
+        </dependency>
+
     </dependencies>
 
     <build>

@@ -10,5 +10,6 @@ import org.springframework.stereotype.Repository
 @Repository
 interface ScoreRepository : MongoRepository<Score, String> {
     fun deleteByQuestionAnswerMetadataIdAndType(questionId: String, type: String)
+    fun findByQuestionAnswerMetadataIdAndType(questionId: String, type: String): List<Score>
 }
 
