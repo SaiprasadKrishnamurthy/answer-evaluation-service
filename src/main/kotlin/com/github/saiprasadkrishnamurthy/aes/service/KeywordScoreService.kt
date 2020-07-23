@@ -14,10 +14,20 @@ class KeywordScoreService(messagePublisher: MessagePublisher, val elasticKeyword
             val keywordMatchRequest = KeywordMatchRequest(questionAnswerMetadataIdentifier = questionAnswerMetadata.identifier,
                     answer = questionAnswerMetadata.actualAnswer)
             val matchResponse = elasticKeywordsService.matchKeywords(keywordMatchRequest)
-            Score(id = UUID.randomUUID().toString(), questionAnswerMetadataId = questionAnswerMetadata.id, answerType = AnswerType.actual, score = matchResponse.score, explanation = matchResponse.texts, type = "keywords")
+            Score(id = UUID.randomUUID().toString(),
+                    questionAnswerMetadataId = questionAnswerMetadata.id,
+                    answerType = AnswerType.actual,
+                    score = matchResponse.score * questionAnswerMetadata.weightages.getOrDefault("keywords", 1.0),
+                    explanation = matchResponse.texts,
+                    type = "keywords")
         } else {
             elasticKeywordsService.registerKeywords(questionAnswerMetadata)
-            Score(id = UUID.randomUUID().toString(), questionAnswerMetadataId = questionAnswerMetadata.id, answerType = AnswerType.expected, score = questionAnswerMetadata.keywords.size.toDouble(), explanation = questionAnswerMetadata.keywords.map { it.keyword }, type = "keywords")
+            Score(id = UUID.randomUUID().toString(),
+                    questionAnswerMetadataId = questionAnswerMetadata.id,
+                    answerType = AnswerType.expected,
+                    score = questionAnswerMetadata.keywords.size.toDouble() * questionAnswerMetadata.weightages.getOrDefault("keywords", 1.0),
+                    explanation = questionAnswerMetadata.keywords.map { it.keyword },
+                    type = "keywords")
         }
     }
 }
