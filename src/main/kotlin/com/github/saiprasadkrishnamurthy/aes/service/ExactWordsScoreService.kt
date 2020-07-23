@@ -12,10 +12,18 @@ import org.springframework.stereotype.Service
 @Service
 class ExactWordsScoreService(messagePublisher: MessagePublisher) : BaseScoreService(messagePublisher) {
     override fun getScore(questionAnswerMetadata: QuestionAnswerMetadata): Score {
-        println(" Implement Me Kumar!")
         return if (questionAnswerMetadata.actualAnswer.isNotBlank()) {
             // your logic call Score.n(...) with the actual score.
-            Score.zero(qmId = questionAnswerMetadata.id, answerType = AnswerType.actual, type = "exactWords")
+            val actualAnswerIgnoringSpaces = questionAnswerMetadata.actualAnswer.replace("\\s+", "")
+            val exactAnswers = questionAnswerMetadata.exactTexts
+            var score = 0.0;
+            exactAnswers.forEach {
+                val keywordIgnoringSpaces = it.keyword.replace("\\s+","")
+                if (actualAnswerIgnoringSpaces.contains(keywordIgnoringSpaces, true)) {
+                    score++;
+                }
+            }
+            Score.n(qmId = questionAnswerMetadata.id, answerType = AnswerType.actual, type = "exactWords", n = score)
         } else {
             Score.one(qmId = questionAnswerMetadata.id, answerType = AnswerType.expected, type = "exactWords")
         }
