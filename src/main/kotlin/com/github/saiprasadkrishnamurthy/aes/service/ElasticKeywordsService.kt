@@ -2,6 +2,8 @@ package com.github.saiprasadkrishnamurthy.aes.service
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.github.saiprasadkrishnamurthy.aes.config.ElasticConfig
+import com.github.saiprasadkrishnamurthy.aes.model.KeywordMatchRequest
+import com.github.saiprasadkrishnamurthy.aes.model.KeywordMatchResponse
 import com.github.saiprasadkrishnamurthy.aes.model.KeywordsService
 import com.github.saiprasadkrishnamurthy.aes.model.QuestionAnswerMetadata
 import org.slf4j.LoggerFactory
@@ -14,6 +16,7 @@ import org.springframework.stereotype.Service
  */
 @Service
 class ElasticKeywordsService(private val elasticConfig: ElasticConfig) : KeywordsService {
+
     val keywordsIndexQueryFuzzyFragmentJson = """
         {
           "function_score": {
@@ -41,8 +44,7 @@ class ElasticKeywordsService(private val elasticConfig: ElasticConfig) : Keyword
               "match": {
                 "text":  "%s"
                 }
-              }
-            },
+              },
             "boost_mode": "replace",
             "functions": [
               {
@@ -50,6 +52,7 @@ class ElasticKeywordsService(private val elasticConfig: ElasticConfig) : Keyword
               }
             ]
           }
+        }
     """.trimIndent()
 
     val keywordsIndexQueryTemplateJson = """
@@ -65,6 +68,31 @@ class ElasticKeywordsService(private val elasticConfig: ElasticConfig) : Keyword
         { "term":  { "subjectId": "%s" }},
         { "term":  { "classId": "%s" }}
       ]
+    }
+  }
+}
+    """.trimIndent()
+
+    val keywordsPercolationQuery = """
+        {
+  "_source": {
+    "excludes": "*"
+  },
+  "query": {
+    "percolate": {
+      "field": "query",
+      "document": {
+        "quesionId": "%s",
+        "clientId": "%s",
+        "subjectId": "%s",
+        "classId": "%s",
+        "text": "%s"
+      }
+    }
+  },
+  "highlight": {
+    "fields": {
+      "text": {}
     }
   }
 }
@@ -87,6 +115,22 @@ class ElasticKeywordsService(private val elasticConfig: ElasticConfig) : Keyword
         val uri = "${elasticConfig.esUrl}/${elasticConfig.esKeywordsIndex}/_doc/${questionAnswerMetadata.id}"
         val response = elasticConfig.esRestTemplate().exchange(uri, HttpMethod.PUT, HttpEntity(OM.readValue(q, Map::class.java), elasticConfig.esAuthHeaders()), Map::class.java)
         LOG.info("Response: {}", response.body)
+    }
+
+    override fun matchKeywords(keywordMatchRequest: KeywordMatchRequest): KeywordMatchResponse {
+        val q = String.format(keywordsPercolationQuery,
+                keywordMatchRequest.questionAnswerMetadataIdentifier.questionId,
+                keywordMatchRequest.questionAnswerMetadataIdentifier.clientId,
+                keywordMatchRequest.questionAnswerMetadataIdentifier.subjectId,
+                keywordMatchRequest.questionAnswerMetadataIdentifier.classId,
+                keywordMatchRequest.answer)
+        val uri = "${elasticConfig.esUrl}/${elasticConfig.esKeywordsIndex}/_search"
+        val response = elasticConfig.esRestTemplate().exchange(uri, HttpMethod.POST, HttpEntity(OM.readValue(q, Map::class.java), elasticConfig.esAuthHeaders()), Map::class.java)
+        val hits = response.body?.get("hits") as Map<Any, Any>
+        val score = hits["_score"] as Double
+        val highlight = hits["highlight"] as Map<String, Any>
+        val text = highlight["text"] as List<String>
+        return KeywordMatchResponse(keywordMatchRequest.questionAnswerMetadataIdentifier, score, text)
     }
 
     private fun buildTextQueryForSynonyms(questionAnswerMetadata: QuestionAnswerMetadata, queryFragment: String): List<String> {

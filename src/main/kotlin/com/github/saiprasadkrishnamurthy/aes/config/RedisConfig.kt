@@ -1,52 +1,54 @@
 package com.github.saiprasadkrishnamurthy.aes.config
 
-import com.github.benmanes.caffeine.cache.Caffeine
 import com.github.sonus21.rqueue.config.SimpleRqueueListenerContainerFactory
-import io.lettuce.core.ClientOptions
-import io.lettuce.core.TimeoutOptions
-import org.springframework.beans.factory.annotation.Value
-import org.springframework.cache.CacheManager
-import org.springframework.cache.caffeine.CaffeineCacheManager
+import com.github.sonus21.rqueue.spring.EnableRqueue
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.core.env.Environment
 import org.springframework.data.redis.connection.RedisConnectionFactory
 import org.springframework.data.redis.connection.RedisPassword
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration
-import org.springframework.data.redis.connection.lettuce.LettuceClientConfiguration
-import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory
+import org.springframework.data.redis.connection.jedis.JedisClientConfiguration
+import org.springframework.data.redis.connection.jedis.JedisConnectionFactory
 import org.springframework.data.redis.core.RedisTemplate
-import org.springframework.data.redis.listener.ChannelTopic
-import org.springframework.data.redis.listener.RedisMessageListenerContainer
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor
-import java.time.Duration
-import java.util.concurrent.TimeUnit
 import org.springframework.data.redis.serializer.StringRedisSerializer
-
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor
+import redis.clients.jedis.JedisPoolConfig
+import java.time.Duration
 
 
 /**
  * @author Sai.
  */
+@EnableRqueue
 @Configuration
 class RedisConfig {
     @Bean
-    fun jedisConnectionFactory(environment: Environment): RedisConnectionFactory {
-        val redisConfiguration = RedisStandaloneConfiguration()
-        redisConfiguration.database = environment.getProperty("redis.database", Int::class.java)!!
-        redisConfiguration.setHostName(environment.getProperty("redis.host")!!)
-        redisConfiguration.port = environment.getProperty("redis.port", Int::class.java)!!
-        redisConfiguration.password = RedisPassword.of(environment.getProperty("redis.password", String::class.java))
-        val clientOptions = ClientOptions.builder()
-                .autoReconnect(true)
-                .timeoutOptions(TimeoutOptions.builder().fixedTimeout(Duration.ofSeconds(10)).build())
-                .requestQueueSize(Integer.MAX_VALUE)
-                .build()
-        val clientConfiguration = LettuceClientConfiguration.builder()
-                .commandTimeout(Duration.ofSeconds(10))
-                .clientOptions(clientOptions)
-                .build()
-        return LettuceConnectionFactory(redisConfiguration, clientConfiguration)
+    fun redisConnectionFactory(environment: Environment): RedisConnectionFactory {
+        val redisStandaloneConfiguration = RedisStandaloneConfiguration()
+        redisStandaloneConfiguration.hostName = environment.getProperty("redis.host")!!
+        redisStandaloneConfiguration.port = environment.getProperty("redis.port")!!.toInt()
+        redisStandaloneConfiguration.database = environment.getProperty("redis.database")!!.toInt()
+        redisStandaloneConfiguration.password = RedisPassword.of(environment.getProperty("redis.password")!!)
+        val jedisClientConfiguration = JedisClientConfiguration.builder()
+        jedisClientConfiguration.connectTimeout(Duration.ofSeconds(60))// 60s connection timeout
+        jedisClientConfiguration.usePooling().poolConfig(buildPoolConfig())
+        return JedisConnectionFactory(redisStandaloneConfiguration, jedisClientConfiguration.build())
+    }
+
+    private fun buildPoolConfig(): JedisPoolConfig {
+        // TODO from config.
+        val poolConfig = JedisPoolConfig()
+        poolConfig.maxTotal = 10
+        poolConfig.maxIdle = 10
+        poolConfig.testOnBorrow = false
+        poolConfig.testOnReturn = false
+        poolConfig.testWhileIdle = false
+        poolConfig.minEvictableIdleTimeMillis = Duration.ofSeconds(60).toMillis()
+        poolConfig.timeBetweenEvictionRunsMillis = Duration.ofSeconds(30).toMillis()
+        poolConfig.blockWhenExhausted = false
+        poolConfig.testOnCreate = true
+        return poolConfig
     }
 
     @Bean

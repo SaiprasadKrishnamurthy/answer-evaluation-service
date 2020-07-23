@@ -2,14 +2,135 @@
   "query": {
     "bool": {
       "should": [
-        %s
+        {
+          "function_score": {
+            "query": {
+              "fuzzy": {
+                "text": {
+                  "value": "October 2"
+                }
+              }
+            },
+            "boost_mode": "replace",
+            "functions": [
+              {
+                "weight": 3
+              }
+            ]
+          }
+        },{
+          "function_score": {
+            "query": {
+              "fuzzy": {
+                "text": {
+                  "value": "Porbandar"
+                }
+              }
+            },
+            "boost_mode": "replace",
+            "functions": [
+              {
+                "weight": 3
+              }
+            ]
+          }
+        },{
+          "function_score": {
+            "query": {
+              "fuzzy": {
+                "text": {
+                  "value": "lawyer"
+                }
+              }
+            },
+            "boost_mode": "replace",
+            "functions": [
+              {
+                "weight": 2
+              }
+            ]
+          }
+        },{
+          "function_score": {
+            "query": {
+              "fuzzy": {
+                "text": {
+                  "value": "social activist"
+                }
+              }
+            },
+            "boost_mode": "replace",
+            "functions": [
+              {
+                "weight": 3
+              }
+            ]
+          }
+        },
+        {
+          "function_score": {
+            "query": {
+              "match": {
+                "text": "October 2"
+              }
+            },
+            "boost_mode": "replace",
+            "functions": [
+              {
+                "weight": 3
+              }
+            ]
+          }
+        },{
+          "function_score": {
+            "query": {
+              "match": {
+                "text":  "Porbandar"
+              }
+            }
+          },
+          "boost_mode": "replace",
+          "functions": [
+            {
+              "weight": 3
+            }
+          ]
+        },{
+          "function_score": {
+            "query": {
+              "match": {
+                "text":  "lawyer"
+              }
+            }
+          },
+          "boost_mode": "replace",
+          "functions": [
+            {
+              "weight": 2
+            }
+          ]
+        },{
+          "function_score": {
+            "query": {
+              "match": {
+                "text":  "social activist"
+              }
+            }
+          },
+          "boost_mode": "replace",
+          "functions": [
+            {
+              "weight": 3
+            }
+          ]
+        }
       ],
       "filter": [
-        { "term":  { "quesionId": "%s" }},
-        { "term":  { "clientId": "%s" }},
-        { "term":  { "subjectId": "%s" }},
-        { "term":  { "classId": "%s" }}
+        { "term":  { "quesionId": "1" }},
+        { "term":  { "clientId": "SITA" }},
+        { "term":  { "subjectId": "SC" }},
+        { "term":  { "classId": "XII" }}
       ]
     }
   }
-}
+} 
