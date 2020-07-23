@@ -25,7 +25,8 @@ data class QuestionAnswerMetadata(@Id val id: String = UUID.randomUUID().toStrin
                                   val topics: List<Text>,
                                   val exactTexts: List<Text>,
                                   val maxPhrasesMarks: Int,
-                                  val penaltyRules: List<PenaltyRule>)
+                                  val penaltyRules: List<PenaltyRule>,
+                                  val actualAnswer: String = "")
 
 data class Text(val keyword: String, val marks: Int, val synonyms: List<String>)
 data class PenaltyRule(val penalty: String, val marks: Int, val maxPenaltyMarks: Int)
