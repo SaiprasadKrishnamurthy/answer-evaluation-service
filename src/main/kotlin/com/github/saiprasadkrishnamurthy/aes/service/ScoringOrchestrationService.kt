@@ -9,6 +9,8 @@ import org.apache.commons.math3.stat.StatUtils
 import org.slf4j.LoggerFactory
 import org.springframework.context.ApplicationContext
 import org.springframework.stereotype.Service
+import java.math.RoundingMode
+import java.text.DecimalFormat
 
 /**
  * @author Sai.
@@ -24,10 +26,12 @@ class ScoringOrchestrationService(val applicationContext: ApplicationContext,
     }
 
     fun overallScore(questionAnswerMetadata: QuestionAnswerMetadata): TotalScore {
-        val expected = scoreRepository.findByQuestionAnswerMetadataIdAndType(questionAnswerMetadata.id, "expected").sortedBy { it.type }
-        val actual = scoreRepository.findByQuestionAnswerMetadataIdAndType(questionAnswerMetadata.id, "actual").sortedBy { it.type }
-        val v1 = expected.map { it.score }.toTypedArray()
-        val v2 = actual.map { it.score }.toTypedArray()
+        val scoreServices = applicationContext.getBeansOfType(BaseScoreService::class.java)
+        scoreServices.values.forEach { it.computeScoreSync(questionAnswerMetadata) }
+        val expected = scoreRepository.findByQuestionAnswerMetadataIdAndAnswerType(questionAnswerMetadata.id, "expected").sortedBy { it.type }
+        val actual = scoreRepository.findByQuestionAnswerMetadataIdAndAnswerType(questionAnswerMetadata.id, "actual").sortedBy { it.type }
+        val v1 = expected.sortedBy { it.type }.map { it.score }.toTypedArray()
+        val v2 = actual.sortedBy { it.type }.map { it.score }.toTypedArray()
         val x1 = DoubleArray(v1.size)
         val x2 = DoubleArray(v2.size)
 
@@ -47,27 +51,36 @@ class ScoringOrchestrationService(val applicationContext: ApplicationContext,
             }
         }
 
-        // Normalize.
-        z1 = StatUtils.normalize(z1)
-        z1.forEachIndexed { i, v ->
-            if (i > z1.size / 2) {
-                x2[i] = v
-            } else {
-                x1[i] = v
-            }
-        }
+        //normalize(z1, x2, x1)
 
         LOG.info("Normalized Expected vector: {}", x1.toList())
         LOG.info("Normalized Actual vector: {}", x2.toList())
 
         val distance = EuclideanDistance().compute(x1, x2)
         LOG.info("Distance: {}", distance)
-        val totalScore = (1 / (1 + distance)) * questionAnswerMetadata.totalMarks
+        var totalScore = (1 / (1 + distance)) * questionAnswerMetadata.totalMarks
+        val df = DecimalFormat("#.##")
+        df.roundingMode = RoundingMode.FLOOR
+        totalScore = df.format(totalScore).toDouble()
+
         LOG.info("Total score: {}", totalScore)
 
         val ts = TotalScore(questionAnswerMetadata = questionAnswerMetadata, rawScores = actual, total = totalScore)
         totalScoreRepository.save(ts)
         return ts
+    }
+
+    private fun normalize(z1: DoubleArray, x2: DoubleArray, x1: DoubleArray) {
+        // Normalize.
+        var z1 = z1
+        z1 = StatUtils.normalize(z1)
+        z1.forEachIndexed { i, v ->
+            if (i > (z1.size / 2) - 1) {
+                x2[i - (z1.size / 2)] = v
+            } else {
+                x1[i] = v
+            }
+        }
     }
 
     companion object {

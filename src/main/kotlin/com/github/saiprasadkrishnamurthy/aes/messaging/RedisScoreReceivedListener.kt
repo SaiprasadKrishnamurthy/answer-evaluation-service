@@ -14,8 +14,14 @@ import org.springframework.stereotype.Service
 class RedisScoreReceivedListener(val scoreRepository: ScoreRepository) : ScoreListener {
     @RqueueListener(value = ["\${scoreQueue}"])
     override fun scoreReceived(json: String) {
-        val score = jacksonObjectMapper().readValue(json, Score::class.java)
-        scoreRepository.deleteByQuestionAnswerMetadataIdAndType(score.questionAnswerMetadataId, score.type)
-        scoreRepository.save(score)
+        try {
+            println(json)
+            println("\n\n")
+            val score = jacksonObjectMapper().readValue(json, Score::class.java)
+            scoreRepository.deleteByQuestionAnswerMetadataIdAndTypeAndAnswerType(score.questionAnswerMetadataId, score.type, score.answerType.toString())
+            scoreRepository.save(score)
+        } catch (ex: Exception) {
+            ex.printStackTrace()
+        }
     }
 }

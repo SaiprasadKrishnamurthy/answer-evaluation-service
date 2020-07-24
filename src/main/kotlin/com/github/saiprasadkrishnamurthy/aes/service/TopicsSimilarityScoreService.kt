@@ -4,6 +4,7 @@ import com.github.saiprasadkrishnamurthy.aes.model.AnswerType
 import com.github.saiprasadkrishnamurthy.aes.model.MessagePublisher
 import com.github.saiprasadkrishnamurthy.aes.model.QuestionAnswerMetadata
 import com.github.saiprasadkrishnamurthy.aes.model.Score
+import com.github.saiprasadkrishnamurthy.aes.repository.ScoreRepository
 import com.textrazor.TextRazor
 import org.springframework.core.env.Environment
 import org.springframework.stereotype.Service
@@ -13,11 +14,12 @@ import org.springframework.stereotype.Service
  * @author Sai.
  */
 @Service
-class TopicsSimilarityScoreService(messagePublisher: MessagePublisher, private val environment: Environment) : BaseScoreService(messagePublisher) {
+class TopicsSimilarityScoreService(messagePublisher: MessagePublisher, private val environment: Environment, scoreRepository: ScoreRepository) : BaseScoreService(messagePublisher, scoreRepository) {
     override fun getScore(questionAnswerMetadata: QuestionAnswerMetadata): Score {
-        val apiKey = environment.getProperty("apiKey")
+        val apiKey = environment.getProperty("textTopicsApiKey")
         return when {
-            questionAnswerMetadata.actualAnswer.isNotBlank() -> {
+            questionAnswerMetadata.actualAnswer.isNotBlank() && questionAnswerMetadata.topics.isEmpty() -> Score.zero(qmId = questionAnswerMetadata.id, answerType = AnswerType.actual, type = "topics")
+            questionAnswerMetadata.actualAnswer.isNotBlank() && questionAnswerMetadata.topics.isNotEmpty() -> {
                 val client = TextRazor(apiKey)
                 client.addExtractor("words")
                 client.addExtractor("entities")
@@ -29,6 +31,7 @@ class TopicsSimilarityScoreService(messagePublisher: MessagePublisher, private v
                 Score.n(qmId = questionAnswerMetadata.id, answerType = AnswerType.actual, type = "topics", n = matches.toDouble() * questionAnswerMetadata.weightages.getOrDefault("topics", 1.0))
             }
             questionAnswerMetadata.topics.isNotEmpty() -> Score.n(qmId = questionAnswerMetadata.id, answerType = AnswerType.expected, type = "topics", n = questionAnswerMetadata.topics.size * questionAnswerMetadata.weightages.getOrDefault("keywords", 1.0))
+
             else -> Score.zero(qmId = questionAnswerMetadata.id, answerType = AnswerType.expected, type = "topics")
         }
     }

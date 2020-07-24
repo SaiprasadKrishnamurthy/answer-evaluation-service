@@ -124,12 +124,17 @@ class ElasticKeywordsService(private val elasticConfig: ElasticConfig) : Keyword
                 keywordMatchRequest.questionAnswerMetadataIdentifier.subjectId,
                 keywordMatchRequest.questionAnswerMetadataIdentifier.classId,
                 keywordMatchRequest.answer)
+
         val uri = "${elasticConfig.esUrl}/${elasticConfig.esKeywordsIndex}/_search"
+        println(uri)
+        println(q)
         val response = elasticConfig.esRestTemplate().exchange(uri, HttpMethod.POST, HttpEntity(OM.readValue(q, Map::class.java), elasticConfig.esAuthHeaders()), Map::class.java)
         val hits = response.body?.get("hits") as Map<Any, Any>
-        val score = hits["_score"] as Double
-        val highlight = hits["highlight"] as Map<String, Any>
-        val text = highlight["text"] as List<String>
+        println(hits)
+        val h = hits["hits"] as List<Map<String, Any>>
+        val score = h[0]["_score"] as Double
+        val highlight = if (h[0]["highlight"] == null) emptyMap<String, Any>() else h[0]["highlight"] as Map<String, Any>
+        val text = if(highlight.isEmpty()) listOf<String>() else highlight["text"] as List<String>
         return KeywordMatchResponse(keywordMatchRequest.questionAnswerMetadataIdentifier, score, text)
     }
 

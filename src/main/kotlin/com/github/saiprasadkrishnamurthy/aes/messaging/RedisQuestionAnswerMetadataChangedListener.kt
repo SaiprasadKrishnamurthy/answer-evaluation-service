@@ -14,7 +14,11 @@ import org.springframework.stereotype.Service
 class RedisQuestionAnswerMetadataChangedListener(val scoringOrchestrationService: ScoringOrchestrationService) : QuestionAnswerMetadataChangedListener {
     @RqueueListener(value = ["\${questionAnswerChangedQueue}"])
     override fun questionAnswerMetadataChanged(json: String) {
-        val qm = jacksonObjectMapper().readValue(json, QuestionAnswerMetadata::class.java)
-        scoringOrchestrationService.wordToVec(qm)
+        try {
+            val qm = jacksonObjectMapper().readValue(json, QuestionAnswerMetadata::class.java)
+            scoringOrchestrationService.wordToVec(qm)
+        } catch (ex: Exception) {
+            ex.printStackTrace()
+        }
     }
 }

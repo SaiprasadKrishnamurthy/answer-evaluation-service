@@ -11,6 +11,6 @@ import org.springframework.stereotype.Service
 class RedisEvaluationResultReceivedListener : EvaluationResultListener {
     @RqueueListener(value = ["\${evaluationResultReceivedQueue}"])
     override fun evaluationResultReceived(json: String) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+
     }
 }

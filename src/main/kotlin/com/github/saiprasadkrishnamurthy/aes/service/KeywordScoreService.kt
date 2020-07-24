@@ -1,6 +1,7 @@
 package com.github.saiprasadkrishnamurthy.aes.service
 
 import com.github.saiprasadkrishnamurthy.aes.model.*
+import com.github.saiprasadkrishnamurthy.aes.repository.ScoreRepository
 import org.springframework.stereotype.Service
 import java.util.*
 
@@ -8,7 +9,7 @@ import java.util.*
  * @author Sai.
  */
 @Service
-class KeywordScoreService(messagePublisher: MessagePublisher, val elasticKeywordsService: ElasticKeywordsService) : BaseScoreService(messagePublisher) {
+class KeywordScoreService(messagePublisher: MessagePublisher, val elasticKeywordsService: ElasticKeywordsService, scoreRepository: ScoreRepository) : BaseScoreService(messagePublisher, scoreRepository) {
     override fun getScore(questionAnswerMetadata: QuestionAnswerMetadata): Score {
         return if (questionAnswerMetadata.actualAnswer.isNotBlank()) {
             val keywordMatchRequest = KeywordMatchRequest(questionAnswerMetadataIdentifier = questionAnswerMetadata.identifier,

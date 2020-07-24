@@ -4,6 +4,7 @@ import com.github.saiprasadkrishnamurthy.aes.model.AnswerType
 import com.github.saiprasadkrishnamurthy.aes.model.MessagePublisher
 import com.github.saiprasadkrishnamurthy.aes.model.QuestionAnswerMetadata
 import com.github.saiprasadkrishnamurthy.aes.model.Score
+import com.github.saiprasadkrishnamurthy.aes.repository.ScoreRepository
 import org.springframework.core.env.Environment
 import org.springframework.http.HttpEntity
 import org.springframework.http.HttpHeaders
@@ -15,7 +16,7 @@ import org.springframework.web.client.RestTemplate
  * @author Sai.
  */
 @Service
-class SemanticSimilarityScoreService(messagePublisher: MessagePublisher, private val environment: Environment) : BaseScoreService(messagePublisher) {
+class SemanticSimilarityScoreService(messagePublisher: MessagePublisher, private val environment: Environment, scoreRepository: ScoreRepository) : BaseScoreService(messagePublisher, scoreRepository) {
     val restTemplate = RestTemplate()
     override fun getScore(questionAnswerMetadata: QuestionAnswerMetadata): Score {
         val textSemanticSimilarityApi = environment.getProperty("textSemanticSimilarityApi")!!

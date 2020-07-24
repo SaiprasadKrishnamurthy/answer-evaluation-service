@@ -4,13 +4,14 @@ import com.github.saiprasadkrishnamurthy.aes.model.AnswerType
 import com.github.saiprasadkrishnamurthy.aes.model.MessagePublisher
 import com.github.saiprasadkrishnamurthy.aes.model.QuestionAnswerMetadata
 import com.github.saiprasadkrishnamurthy.aes.model.Score
+import com.github.saiprasadkrishnamurthy.aes.repository.ScoreRepository
 import org.springframework.stereotype.Service
 
 /**
  * @author Sai.
  */
 @Service
-class ExactWordsScoreService(messagePublisher: MessagePublisher) : BaseScoreService(messagePublisher) {
+class ExactWordsScoreService(messagePublisher: MessagePublisher, scoreRepository: ScoreRepository) : BaseScoreService(messagePublisher, scoreRepository) {
     override fun getScore(questionAnswerMetadata: QuestionAnswerMetadata): Score {
         return if (questionAnswerMetadata.actualAnswer.isNotBlank()) {
             val actualAnswerIgnoringSpaces = questionAnswerMetadata.actualAnswer.replace("\\s+", "")
@@ -27,7 +28,7 @@ class ExactWordsScoreService(messagePublisher: MessagePublisher) : BaseScoreServ
                     type = "exactWords",
                     n = score * questionAnswerMetadata.weightages.getOrDefault("exactWords", 1.0))
         } else {
-            Score.one(qmId = questionAnswerMetadata.id, answerType = AnswerType.expected, type = "exactWords")
+            Score.zero(qmId = questionAnswerMetadata.id, answerType = AnswerType.expected, type = "exactWords")
         }
     }
 }
