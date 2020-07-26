@@ -28,6 +28,7 @@ class SpellMistakesScoreService(messagePublisher: MessagePublisher, private val 
 
     override fun getScore(questionAnswerMetadata: QuestionAnswerMetadata): Score {
         var score =0
+        var spellErros= listOf<String>()
          if (spellCheckApiEnabled.equals("true") && questionAnswerMetadata.actualAnswer.isNotBlank()) {
 
              val builder = URIBuilder(spellCheckApi)
@@ -42,6 +43,7 @@ class SpellMistakesScoreService(messagePublisher: MessagePublisher, private val 
              // Request body
              val reqEntity = StringEntity("Text=${questionAnswerMetadata.actualAnswer}")
              request.entity = reqEntity
+
              val response = httpclient.execute(request)
              val entity = response.entity
 
@@ -50,10 +52,12 @@ class SpellMistakesScoreService(messagePublisher: MessagePublisher, private val 
                  println("spellErrorsMap: $spellErrorsMap")
                  val flaggeedTokens = spellErrorsMap!!["flaggedTokens"] as List<Map<String, Any>>?
                  score = flaggeedTokens!!.size
+                 spellErros =flaggeedTokens.map { f->f.get("token").toString() }
                  println("flaggeedTokens -----: $flaggeedTokens")
                  println("score -----: $score")
              }
-            return Score.n(qmId = questionAnswerMetadata.id, answerType = AnswerType.actual, type = "spellMistakes", n = score.toDouble() * questionAnswerMetadata.weightages.getOrDefault("spellMistakes", 1.0))
+            return Score.n(qmId = questionAnswerMetadata.id, answerType = AnswerType.actual, type = "spellMistakes",explanation=spellErros,
+                    n = score.toDouble() * questionAnswerMetadata.weightages.getOrDefault("spellMistakes", 0.2))
          } else {
              return Score.n(qmId = questionAnswerMetadata.id, answerType = AnswerType.expected, type = "spellMistakes", n = questionAnswerMetadata.weightages.getOrDefault("spellMistakes", 1.0))
          }
