@@ -32,6 +32,7 @@ data class KeywordMatchRequest(val questionAnswerMetadataIdentifier: QuestionAns
 data class KeywordMatchResponse(val questionAnswerMetadataIdentifier: QuestionAnswerMetadataIdentifier, val score: Double = 0.0, val texts: List<String>)
 
 data class Answer(val studentId: String, val questionAnswerMetadataId: String, val answer: String)
+data class ExpectedAnswer(val answer: String)
 
 @Document
 data class TotalScore(@Id val id: String = UUID.randomUUID().toString(),

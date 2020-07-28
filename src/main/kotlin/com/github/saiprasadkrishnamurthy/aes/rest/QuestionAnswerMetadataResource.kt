@@ -1,8 +1,10 @@
 package com.github.saiprasadkrishnamurthy.aes.rest
 
+import com.github.saiprasadkrishnamurthy.aes.model.ExpectedAnswer
 import com.github.saiprasadkrishnamurthy.aes.model.QuestionAnswerMetadata
 import com.github.saiprasadkrishnamurthy.aes.model.QuestionAnswerMetadataIdentifier
 import com.github.saiprasadkrishnamurthy.aes.model.QuestionAnswerMetadataService
+import com.github.saiprasadkrishnamurthy.aes.service.TopicsSimilarityService
 import org.springframework.web.bind.annotation.*
 import org.springframework.http.MediaType
 
@@ -12,7 +14,8 @@ import org.springframework.http.MediaType
 @RestController
 @RequestMapping("/api/v1")
 @CrossOrigin
-class QuestionAnswerMetadataResource(private val questionAnswerMetadataService: QuestionAnswerMetadataService) {
+class QuestionAnswerMetadataResource(private val questionAnswerMetadataService: QuestionAnswerMetadataService,
+                                     private val topicsSimilarityService: TopicsSimilarityService) {
 
     @GetMapping("/question-answer-metadata/{id}", produces = [MediaType.APPLICATION_JSON_VALUE])
     fun get(@PathVariable("id") id: String) =
@@ -28,4 +31,9 @@ class QuestionAnswerMetadataResource(private val questionAnswerMetadataService: 
 
     @GetMapping("/question-answer-metadata", produces = [MediaType.APPLICATION_JSON_VALUE])
     fun findAll() = questionAnswerMetadataService.findAll()
+
+    @PostMapping("/get-similiar-topics", produces = [MediaType.APPLICATION_JSON_VALUE])
+    fun getSimiliarTopicsForAnswer(@RequestBody expectedAnswer: ExpectedAnswer)=
+            topicsSimilarityService.getSimiliarTopics(expectedAnswer)
+
 }
