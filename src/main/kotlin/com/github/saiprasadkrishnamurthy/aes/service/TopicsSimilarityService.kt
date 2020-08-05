@@ -16,7 +16,7 @@ class TopicsSimilarityService(private val environment: Environment){
         client.addExtractor("entities")
         client.addExtractor("topics")
         val response = client.analyze(expectedAnswer.answer)
-        return response.response.topics.map { it.label.toLowerCase() }
+        return response.response.topics.take(20).map { it.label.toLowerCase() }
     }
 
 }

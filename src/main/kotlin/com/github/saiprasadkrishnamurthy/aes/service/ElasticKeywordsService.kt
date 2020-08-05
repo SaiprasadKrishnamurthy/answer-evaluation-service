@@ -17,26 +17,6 @@ import org.springframework.stereotype.Service
 @Service
 class ElasticKeywordsService(private val elasticConfig: ElasticConfig) : KeywordsService {
 
-    val keywordsIndexQueryFuzzyFragmentJson = """
-        {
-          "function_score": {
-            "query": {
-              "fuzzy": {
-                "text": {
-                  "value": "%s"
-                }
-              }
-            },
-            "boost_mode": "replace",
-            "functions": [
-              {
-                "weight": %s
-              }
-            ]
-          }
-        }
-    """.trimIndent()
-
     val keywordsIndexQueryExactFragmentJson = """
         {
           "function_score": {
@@ -100,11 +80,9 @@ class ElasticKeywordsService(private val elasticConfig: ElasticConfig) : Keyword
 
 
     override fun registerKeywords(questionAnswerMetadata: QuestionAnswerMetadata) {
-        val fuzzy = buildTextQuery(questionAnswerMetadata, keywordsIndexQueryFuzzyFragmentJson)
-        val fuzzySynonyms = buildTextQueryForSynonyms(questionAnswerMetadata, keywordsIndexQueryFuzzyFragmentJson)
         val regular = buildTextQuery(questionAnswerMetadata, keywordsIndexQueryExactFragmentJson)
         val regularSynonyms = buildTextQueryForSynonyms(questionAnswerMetadata, keywordsIndexQueryExactFragmentJson)
-        val queryFragments = listOf(fuzzy, fuzzySynonyms, regular, regularSynonyms).flatten().joinToString(",")
+        val queryFragments = listOf(regular, regularSynonyms).flatten().joinToString(",")
         val q = String.format(keywordsIndexQueryTemplateJson,
                 queryFragments,
                 questionAnswerMetadata.identifier.questionId,

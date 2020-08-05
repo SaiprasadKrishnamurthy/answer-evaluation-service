@@ -27,40 +27,43 @@ class SpellMistakesScoreService(messagePublisher: MessagePublisher, private val 
     val spellCheckApiEnabled = environment.getProperty("spellCheckApiEnabled")!!
 
     override fun getScore(questionAnswerMetadata: QuestionAnswerMetadata): Score {
-        var score =0
-        var spellErros= listOf<String>()
-         if (spellCheckApiEnabled.equals("true") && questionAnswerMetadata.actualAnswer.isNotBlank()) {
+        var score = 0
+        var spellErros = listOf<String>()
+        if (spellCheckApiEnabled.equals("true") && questionAnswerMetadata.actualAnswer.isNotBlank()) {
 
-             val builder = URIBuilder(spellCheckApi)
-             builder.setParameter("mode", "proof")
-             builder.setParameter("mkt", "en-US")
+            val builder = URIBuilder(spellCheckApi)
+            builder.setParameter("mode", "proof")
+            builder.setParameter("mkt", "en-US")
 
-             val uri = builder.build()
-             val request = HttpPost(uri)
-             request.setHeader("Content-Type", "application/x-www-form-urlencoded")
-             request.setHeader("Ocp-Apim-Subscription-Key", spellCheckApiKey)
+            val uri = builder.build()
+            val request = HttpPost(uri)
+            request.setHeader("Content-Type", "application/x-www-form-urlencoded")
+            request.setHeader("Ocp-Apim-Subscription-Key", spellCheckApiKey)
 
-             // Request body
-             val reqEntity = StringEntity("Text=${questionAnswerMetadata.actualAnswer}")
-             request.entity = reqEntity
+            // Request body
+            val reqEntity = StringEntity("Text=${questionAnswerMetadata.actualAnswer}")
+            request.entity = reqEntity
 
-             val response = httpclient.execute(request)
-             val entity = response.entity
+            val response = httpclient.execute(request)
+            val entity = response.entity
 
-             if (entity != null) {
-                 val spellErrorsMap: MutableMap<*, *>? = ObjectMapper().readValue(EntityUtils.toString(entity), MutableMap::class.java)
-                 println("spellErrorsMap: $spellErrorsMap")
-                 val flaggeedTokens = spellErrorsMap!!["flaggedTokens"] as List<Map<String, Any>>?
-                 score = flaggeedTokens!!.size
-                 spellErros =flaggeedTokens.map { f->f.get("token").toString() }
-                 println("flaggeedTokens -----: $flaggeedTokens")
-                 println("score -----: $score")
-             }
-            return Score.n(qmId = questionAnswerMetadata.id, answerType = AnswerType.actual, type = "spellMistakes",explanation=spellErros,
+            if (entity != null) {
+                val spellErrorsMap: MutableMap<*, *>? = ObjectMapper().readValue(EntityUtils.toString(entity), MutableMap::class.java)
+                println("spellErrorsMap: $spellErrorsMap")
+                val flaggeedTokens = spellErrorsMap!!["flaggedTokens"] as List<Map<String, Any>>?
+                score = flaggeedTokens!!.size
+                spellErros = flaggeedTokens.map { f -> f.get("token").toString() }
+                println("flaggeedTokens -----: $flaggeedTokens")
+                println("score -----: $score")
+            }
+            return Score.n(qmId = questionAnswerMetadata.id, answerType = AnswerType.actual, type = "spellMistakes", explanation = spellErros,
                     n = score.toDouble() * questionAnswerMetadata.weightages.getOrDefault("spellMistakes", 0.2))
-         } else {
-             return Score.n(qmId = questionAnswerMetadata.id, answerType = AnswerType.expected, type = "spellMistakes", n = questionAnswerMetadata.weightages.getOrDefault("spellMistakes", 1.0))
-         }
+        } else if (spellCheckApiEnabled.equals("false") && questionAnswerMetadata.actualAnswer.isNotBlank()) {
+            return Score.n(qmId = questionAnswerMetadata.id, answerType = AnswerType.actual, type = "spellMistakes", n = 0.0)
+
+        } else {
+            return Score.n(qmId = questionAnswerMetadata.id, answerType = AnswerType.expected, type = "spellMistakes", n = 0.0)
+        }
     }
 
 }

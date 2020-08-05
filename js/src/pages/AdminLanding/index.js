@@ -25,7 +25,8 @@ export default function AdminLanding() {
         rawQuestion: "",
         rawAnswer: "",
         totalMarks: 0,
-        maxMarks: 0
+        maxMarks: 0,
+        topics: []
     }
 
 
@@ -71,8 +72,8 @@ export default function AdminLanding() {
         const removePhrase = [...annotations].map(x => omit(['isPhrase'], x))
         const setAnnotationsWithKeywords = (inputs) => set(xKeyWord, removePhrase, { ...inputs });
         const xTopics = lensProp('topics')
-        const setTopicsWithKeyTopic = (inputs) => set(xTopics, [...topics], { ...inputs })
-        const composePostBodyWithInput = () => compose(setAnnotationsWithKeywords, /* setTopicsWithKeyTopic */)(inputs)
+        const setTopicsWithKeyTopic = (inputs) => set(xTopics, [...topics].map(x => ({ keyword: x, marks: 1, synonyms: [] })), { ...inputs })
+        const composePostBodyWithInput = () => compose(setAnnotationsWithKeywords, setTopicsWithKeyTopic)(inputs)
         const valueForPost = x => ifElse(isNil, warnUser, composePostBodyWithInput)(x)
         let output = valueForPost(annotations);
         console.log(output)
